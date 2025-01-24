@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Admin Panel</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Resume Score</th>
+                <th>Predicted Field</th>
+                <th>Timestamp</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in data %}
+            <tr>
+                <td>{{ row[0] }}</td>
+                <td>{{ row[1] }}</td>
+                <td>{{ row[2] }}</td>
+                <td>{{ row[3] }}</td>
+                <td>{{ row[4] }}</td>
+                <td>{{ row[5] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Placeholder canvas for the aggregated pie chart -->
+    <canvas id="aggregatedChart" width="400" height="400"></canvas>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var rows = {{ data | tojson }};
+            
+            // Aggregate predicted fields from all rows
+            var allFields = [];
+            rows.forEach(function(row) {
+                var predictedField = row[4];
+                if (predictedField) {
+                    allFields = allFields.concat(predictedField.split(', '));
+                }
+            });
+
+            // Count occurrences of each field
+            var fieldCounts = {};
+            allFields.forEach(function(field) {
+                fieldCounts[field] = (fieldCounts[field] || 0) + 1;
+            });
+
+            var ctx = document.getElementById('aggregatedChart').getContext('2d');
+
+            var data = {
+                labels: Object.keys(fieldCounts),
+                datasets: [{
+                    data: Object.values(fieldCounts),
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            };
+
+            var options = {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                return tooltipItem.label + ': ' + tooltipItem.raw + ' occurrences';
+                            }
+                        }
+                    }
+                }
+            };
+
+            var myPieChart = new Chart(ctx, {
+                type: 'pie',
+                data: data,
+                options: options
+            });
+        });
+    </script>
+</body>
+</html>

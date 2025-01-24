@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Analysis Results</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Resume Analysis Results</h1>
+    <p><strong>Email:</strong> {{ result.email }}</p>
+    <p><strong>Resume Score:</strong> {{ result.resume_score }}</p>
+    <p><strong>Career Recommendations:</strong> {{ result.career_recommendations }}</p>
+    <p><strong>Resume Writing Tips:</strong> {{ result.resume_writing_tips }}</p>
+    <p><strong>Suggestions:</strong></p>
+    <ul>
+        {% for suggestion in result.suggestions %}
+        <li>{{ suggestion }}</li>
+        {% endfor %}
+    </ul>
+    <p><strong>Feedback:</strong> {{ result.feedback }}</p>
+
+    <h2>Predicted Field Distribution</h2>
+    <canvas id="predictedFieldChart" width="400" height="400"></canvas>
+    <script>
+        var ctx = document.getElementById('predictedFieldChart').getContext('2d');
+        var predictedField = '{{ result.career_recommendations }}';
+        var fields = predictedField.split(', ');
+        
+        // Count occurrences of each field
+        var fieldCounts = {};
+        fields.forEach(function(field) {
+            fieldCounts[field] = (fieldCounts[field] || 0) + 1;
+        });
+
+        var data = {
+            labels: Object.keys(fieldCounts),
+            datasets: [{
+                data: Object.values(fieldCounts),
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 159, 64, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1
+            }]
+        };
+
+        var options = {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(tooltipItem) {
+                            return tooltipItem.label + ': ' + tooltipItem.raw + ' occurrences';
+                        }
+                    }
+                }
+            }
+        };
+
+        var myPieChart = new Chart(ctx, {
+            type: 'pie',
+            data: data,
+            options: options
+        });
+    </script>
+</body>
+</html>
